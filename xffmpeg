@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+args="$@"
+
+handleAction() {
+  if [ -z "$action" ]; then
+    action="$1"
+  elif [ "$1" != "$action" ]; then
+    echo "Cannot \"$1\" since \"$action\" action was already provided."
+    exit 1
+  fi
+}
+
+# parse args
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    loop|rotate) handleAction "$1" ;;
+    -h|--help|help) handleAction "help" ;;
+    -i|--input) input="$2"; shift ;;
+    -o|--output) output="$2"; shift ;;
+    -v|--value) value="$2"; shift ;;
+    *) echo "Unknown argument passed: $1"; exit 1 ;;
+  esac
+  shift
+done
+
+# do actions, default to help if no args provided
+if [ -z "$args" ]; then
+  action=${action:-help}
+fi
+
+if [ "$action" = "help" ]; then
+  printf "Usage:\n\n"
+  io="xffmpeg -i <input> [-o <output>]"
+  echo "xffmpeg -h|--help|help"
+  echo "$io loop [-v <seconds=0>]"
+  echo "$io rotate [-v <rotate=90>]"
+  exit 0
+fi
+
+if [ -z "$input" ]; then
+  echo "Missing \"-i\" option."
+  exit 1
+fi
+
+# get output name if not provided
+if [ -z "$output" ]; then
+  output=$(echo "${input%.*}-$action.${input##*.}")
+fi
+
+case "$action" in
+  loop)
+    # get time of input, default to 1
+    value=${value:-0}
+    sec=$(ffprobe -i "$input" -show_entries format=duration -v quiet -of csv="p=0")
+    sec="${sec:-1}"
+    n=$(echo "$value $sec" | awk '{print $1 / $2}')
+    n=$(printf "%.0f" "$n")
+    cmd="ffmpeg -stream_loop \"$n\" -i \"$input\" -c copy \"$output\""
+  ;;
+  rotate)
+    value="${value:-90}"
+    cmd="ffmpeg -i \"$input\" -c copy -metadata:s:v:0 rotate=\"$value\" \"$output\""
+  ;;
+esac
+
+if [ -z "$cmd" ]; then
+  echo "No action performed. See \"xffmpeg -h\" for actions."
+  exit 1
+fi
+
+printf "Run command:\n\n$cmd\n\n"
+read -p "Press ENTER to continue."
+eval "$cmd"
