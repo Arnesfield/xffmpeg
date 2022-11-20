@@ -14,7 +14,7 @@ handleAction() {
 # parse args
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    loop|rotate) handleAction "$1" ;;
+    loop|rotate|frame) handleAction "$1" ;;
     -h|--help|help) handleAction "help" ;;
     -i|--input) input="$2"; shift ;;
     -o|--output) output="$2"; shift ;;
@@ -35,6 +35,7 @@ if [ "$action" = "help" ]; then
   echo "xffmpeg -h|--help|help"
   echo "$io loop [-v <seconds=0>]"
   echo "$io rotate [-v <rotate=90>]"
+  echo "$io frame -v <time>"
   exit 0
 fi
 
@@ -43,9 +44,20 @@ if [ -z "$input" ]; then
   exit 1
 fi
 
+# validate value
+if [ -z "$value" ]; then
+  case "$action" in
+    frame) echo "Missing \"-v\" option."; exit 1 ;;
+  esac
+fi
+
 # get output name if not provided
 if [ -z "$output" ]; then
-  output=$(echo "${input%.*}-$action.${input##*.}")
+  case "$action" in
+    frame) ext='png' ;;
+    *) ext=$(echo "${input##*.}") ;;
+  esac
+  output=$(echo "${input%.*}-$action.${ext}")
 fi
 
 case "$action" in
@@ -61,6 +73,10 @@ case "$action" in
   rotate)
     value="${value:-90}"
     cmd="ffmpeg -i \"$input\" -c copy -metadata:s:v:0 rotate=\"$value\" \"$output\""
+  ;;
+  frame)
+    value="${value:-?}"
+    cmd="ffmpeg -ss \"$value\" -i \"$input\" -vframes 1 \"$output\""
   ;;
 esac
 

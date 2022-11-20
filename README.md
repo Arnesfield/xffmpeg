@@ -29,6 +29,7 @@ Usage:
 xffmpeg -h|--help|help
 xffmpeg -i <input> [-o <output>] loop [-v <seconds=0>]
 xffmpeg -i <input> [-o <output>] rotate [-v <rotate=90>]
+xffmpeg -i <input> [-o <output>] frame -v <time>
 ```
 
 ### `loop`
@@ -46,6 +47,14 @@ Rotates `<input>` (default: `90`). Runs:
 
 ```bash
 ffmpeg -i "$input" -c copy -metadata:s:v:0 rotate="$value" "$output"
+```
+
+### `frame`
+
+Extracts 1 frame from `<input>`. The default `<output>` would be the name of the `<input>` with `.png` file extension. Runs:
+
+```bash
+ffmpeg -ss $value -i $input -vframes 1 $output
 ```
 
 ## Example
