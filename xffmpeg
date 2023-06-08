@@ -19,6 +19,7 @@ while [[ "$#" -gt 0 ]]; do
     -i|--input) input="$2"; shift ;;
     -o|--output) output="$2"; shift ;;
     -v|--value) value="$2"; shift ;;
+    -e|--ext|--extension) extension="$2"; shift ;;
     *) echo "Unknown argument passed: $1"; exit 1 ;;
   esac
   shift
@@ -31,11 +32,12 @@ fi
 
 if [ "$action" = "help" ]; then
   printf "Usage:\n\n"
-  io="xffmpeg -i <input> [-o <output>]"
   echo "xffmpeg -h|--help|help"
-  echo "$io loop [-v <seconds=0>]"
-  echo "$io rotate [-v <rotate=90>]"
-  echo "$io frame -v <time>"
+  echo "xffmpeg -i <input> [-o <output>] [-e <extension>] <action> [...args]"
+  printf "\nActions:\n"
+  echo "  loop   [-v <seconds=0>]"
+  echo "  rotate [-v <rotate=90>]"
+  echo "  frame  -v <time>"
   exit 0
 fi
 
@@ -53,10 +55,14 @@ fi
 
 # get output name if not provided
 if [ -z "$output" ]; then
-  case "$action" in
-    frame) ext='png' ;;
-    *) ext=$(echo "${input##*.}") ;;
-  esac
+  if [ -z "$extension" ]; then
+    case "$action" in
+      frame) ext='png' ;;
+      *) ext=$(echo "${input##*.}") ;;
+    esac
+  else
+    ext=$extension
+  fi
   output=$(echo "${input%.*}-$action.${ext}")
 fi
 
