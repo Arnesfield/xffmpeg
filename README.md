@@ -22,17 +22,20 @@ Personal `ffmpeg` helper shortcuts.
 
 Run `xffmpeg -h` to view usage:
 
-```bash
+```console
 $ xffmpeg -h
 Usage:
 
 xffmpeg -h|--help|help
-xffmpeg -i <input> [-o <output>] loop [-v <seconds=0>]
-xffmpeg -i <input> [-o <output>] rotate [-v <rotate=90>]
-xffmpeg -i <input> [-o <output>] frame -v <time>
+xffmpeg -i <input> [-o <output>] [-e <extension>] <action> [...args]
+
+Actions:
+  loop   [-v <seconds=0>]
+  rotate [-v <rotate=90>]
+  frame  -v <time>
 ```
 
-### `loop`
+### loop
 
 Loops `<input>` based on provided `-v` value (default: `0`). Runs:
 
@@ -41,7 +44,7 @@ Loops `<input>` based on provided `-v` value (default: `0`). Runs:
 ffmpeg -stream_loop "$n" -i "$input" -c copy "$output"
 ```
 
-### `rotate`
+### rotate
 
 Rotates `<input>` (default: `90`). Runs:
 
@@ -49,12 +52,16 @@ Rotates `<input>` (default: `90`). Runs:
 ffmpeg -i "$input" -c copy -metadata:s:v:0 rotate="$value" "$output"
 ```
 
-### `frame`
+### frame
 
-Extracts 1 frame from `<input>`. The default `<output>` would be the name of the `<input>` with `.png` file extension. Runs:
+Extracts 1 frame from `<input>`. The default `<output>` would be the name of the `<input>` with `.png` file extension.
+
+> Note: You can override the extension using the `-e <extension>` option.
+
+Runs:
 
 ```bash
-ffmpeg -ss $value -i $input -vframes 1 $output
+ffmpeg -ss "$value" -i "$input" -vframes 1 "$output"
 ```
 
 ## Example
