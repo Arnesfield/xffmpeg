@@ -14,13 +14,28 @@ handleAction() {
 # parse args
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    loop|rotate|frame) handleAction "$1" ;;
-    -h|--help|help) handleAction "help" ;;
-    -i|--input) input="$2"; shift ;;
-    -o|--output) output="$2"; shift ;;
-    -v|--value) value="$2"; shift ;;
-    -e|--ext|--extension) extension="$2"; shift ;;
-    *) echo "Unknown argument passed: $1"; exit 1 ;;
+  loop | rotate | frame) handleAction "$1" ;;
+  -h | --help | help) handleAction "help" ;;
+  -i | --input)
+    input="$2"
+    shift
+    ;;
+  -o | --output)
+    output="$2"
+    shift
+    ;;
+  -v | --value)
+    value="$2"
+    shift
+    ;;
+  -e | --ext | --extension)
+    extension="$2"
+    shift
+    ;;
+  *)
+    echo "Unknown argument passed: $1"
+    exit 1
+    ;;
   esac
   shift
 done
@@ -49,7 +64,10 @@ fi
 # validate value
 if [ -z "$value" ]; then
   case "$action" in
-    frame) echo "Missing \"-v\" option."; exit 1 ;;
+  frame)
+    echo "Missing \"-v\" option."
+    exit 1
+    ;;
   esac
 fi
 
@@ -57,8 +75,8 @@ fi
 if [ -z "$output" ]; then
   if [ -z "$extension" ]; then
     case "$action" in
-      frame) ext='png' ;;
-      *) ext=$(echo "${input##*.}") ;;
+    frame) ext='png' ;;
+    *) ext=$(echo "${input##*.}") ;;
     esac
   else
     ext=$extension
@@ -67,22 +85,22 @@ if [ -z "$output" ]; then
 fi
 
 case "$action" in
-  loop)
-    # get time of input, default to 1
-    value=${value:-0}
-    sec=$(ffprobe -i "$input" -show_entries format=duration -v quiet -of csv="p=0")
-    sec="${sec:-1}"
-    n=$(echo "$value $sec" | awk '{print $1 / $2}')
-    n=$(printf "%.0f" "$n")
-    cmd="ffmpeg -stream_loop \"$n\" -i \"$input\" -c copy \"$output\""
+loop)
+  # get time of input, default to 1
+  value=${value:-0}
+  sec=$(ffprobe -i "$input" -show_entries format=duration -v quiet -of csv="p=0")
+  sec="${sec:-1}"
+  n=$(echo "$value $sec" | awk '{print $1 / $2}')
+  n=$(printf "%.0f" "$n")
+  cmd="ffmpeg -stream_loop \"$n\" -i \"$input\" -c copy \"$output\""
   ;;
-  rotate)
-    value="${value:-90}"
-    cmd="ffmpeg -i \"$input\" -c copy -metadata:s:v:0 rotate=\"$value\" \"$output\""
+rotate)
+  value="${value:-90}"
+  cmd="ffmpeg -i \"$input\" -c copy -metadata:s:v:0 rotate=\"$value\" \"$output\""
   ;;
-  frame)
-    value="${value:-?}"
-    cmd="ffmpeg -ss \"$value\" -i \"$input\" -vframes 1 \"$output\""
+frame)
+  value="${value:-?}"
+  cmd="ffmpeg -ss \"$value\" -i \"$input\" -vframes 1 \"$output\""
   ;;
 esac
 
