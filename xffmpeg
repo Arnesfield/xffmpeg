@@ -96,7 +96,7 @@ loop)
   ;;
 rotate)
   value="${value:-90}"
-  cmd="ffmpeg -i \"$input\" -c copy -metadata:s:v:0 rotate=\"$value\" \"$output\""
+  cmd="ffmpeg -display_rotation:v:0 \"$value\" -i \"$input\" -c copy \"$output\""
   ;;
 frame)
   value="${value:-?}"

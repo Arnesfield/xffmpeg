@@ -49,7 +49,7 @@ ffmpeg -stream_loop "$n" -i "$input" -c copy "$output"
 Rotates `<input>` (default: `90`). Runs:
 
 ```bash
-ffmpeg -i "$input" -c copy -metadata:s:v:0 rotate="$value" "$output"
+ffmpeg -display_rotation:v:0 "$value" -i "$input" -c copy "$output"
 ```
 
 ### frame
